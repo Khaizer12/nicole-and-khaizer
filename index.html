@@ -31,8 +31,9 @@
 
   nav {
     display: flex;
-    justify-content: center;
+    justify-content: center; /* horizontal */
     gap: 20px;
+    flex-wrap: nowrap;
     margin: 10px 0;
   }
 
@@ -150,11 +151,12 @@
   <div id="loginModalContent">
     <h2>Login</h2>
     <label for="roleSelect">Select Role:</label><br>
-    <select id="roleSelect">
+    <select id="roleSelect" onchange="togglePasswordField()">
       <option value="visitor">Visitor</option>
       <option value="owner">Owner</option>
     </select><br>
-    <input type="password" id="passwordInput" placeholder="Enter password (owner)"><br>
+    <!-- Hidden initially, only visible when Owner is selected -->
+    <input type="password" id="passwordInput" placeholder="Enter password (owner)" style="display:none;"><br>
     <button onclick="login()">Login</button>
     <p id="loginMsg" style="color:red;"></p>
   </div>
@@ -183,21 +185,33 @@
   <section id="gallery">
     <h2>Gallery</h2>
     <div class="gallery" id="galleryContainer">
-      <!-- Example items -->
-      <div class="gallery-item">
-        <img src="https://via.placeholder.com/200x150" alt="Memory 1">
-        <p class="caption">Beach Trip – Summer 2025 🌊</p>
-        <button class="edit-btn" onclick="editItem(this)">Edit</button>
-      </div>
-      <div class="gallery-item">
-        <img src="10.jpg" alt="Memory 1">
-        <video controls>
-          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-        <p class="caption">Birthday Celebration 🎂</p>
-        <button class="edit-btn" onclick="editItem(this)">Edit</button>
-      </div>
+      <!-- Dynamic images 1–34 -->
+      <script>
+        const galleryContainer = document.getElementById('galleryContainer');
+        for(let i=1; i<=34; i++){
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'gallery-item';
+
+          const img = document.createElement('img');
+          img.src = `Beshie/${i}.jpg`; // adjust folder path if needed
+          img.alt = `Memory ${i}`;
+
+          const caption = document.createElement('p');
+          caption.className = 'caption';
+          caption.textContent = `Memory ${i}`;
+
+          const editBtn = document.createElement('button');
+          editBtn.className = 'edit-btn';
+          editBtn.textContent = 'Edit';
+          editBtn.onclick = function(){ editItem(editBtn); };
+
+          itemDiv.appendChild(img);
+          itemDiv.appendChild(caption);
+          itemDiv.appendChild(editBtn);
+
+          galleryContainer.appendChild(itemDiv);
+        }
+      </script>
     </div>
   </section>
 
@@ -211,10 +225,21 @@
 
 <script>
   /* === Owner Password Hash (SHA-256) === */
-  // Default strong password: Mem0ryVault!2026
   const ownerHash = "2f57d3d1aa60d171d5b87262ee2f42a6f4d3d104b4c79b1f7b1cb85f0d2c0f5f";
-
   let userRole = "visitor";
+
+  /* Show/hide password input based on role selection */
+  function togglePasswordField() {
+    const role = document.getElementById("roleSelect").value;
+    const pwdField = document.getElementById("passwordInput");
+    const msg = document.getElementById("loginMsg");
+    if(role === "owner") {
+      pwdField.style.display = "block";
+    } else {
+      pwdField.style.display = "none";
+      msg.textContent = "";
+    }
+  }
 
   async function hashPassword(pwd){
     const encoder = new TextEncoder();
